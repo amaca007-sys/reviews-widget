@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reseñas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #faf8f5;
+      --card: #ffffff;
+      --ink: #1a1814;
+      --muted: #7a7570;
+      --accent: #c8a96e;
+      --accent-light: #f0e8d8;
+      --shadow: 0 2px 20px rgba(0,0,0,0.07);
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: transparent;
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .widget {
+      width: 100%;
+      max-width: 960px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .header-label::before,
+    .header-label::after {
+      content: '';
+      display: block;
+      width: 28px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 4vw, 38px);
+      font-weight: 400;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+
+    .header h2 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    /* Stars global */
+    .global-stars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 14px;
+    }
+
+    .star-row { display: flex; gap: 3px; }
+
+    .star { color: var(--accent); font-size: 18px; }
+
+    .global-score {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    /* Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 28px 26px 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(200,169,110,0.12);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeUp 0.5s ease forwards;
+      transition: box-shadow 0.25s, transform 0.25s;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 36px rgba(0,0,0,0.11);
+      transform: translateY(-3px);
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card:nth-child(1) { animation-delay: 0.05s; }
+    .card:nth-child(2) { animation-delay: 0.12s; }
+    .card:nth-child(3) { animation-delay: 0.19s; }
+    .card:nth-child(4) { animation-delay: 0.26s; }
+    .card:nth-child(5) { animation-delay: 0.33s; }
+    .card:nth-child(6) { animation-delay: 0.40s; }
+
+    .card-stars { display: flex; gap: 3px; }
+    .card-stars .star { font-size: 14px; }
+
+    .card-quote {
+      font-family: 'Playfair Display', serif;
+      font-size: 15px;
+      font-style: italic;
+      line-height: 1.65;
+      color: var(--ink);
+      flex: 1;
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .card-quote::before {
+      content: '\201C';
+      position: absolute;
+      left: 0;
+      top: -4px;
+      font-size: 32px;
+      line-height: 1;
+      color: var(--accent);
+      font-style: normal;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--accent-light);
+    }
+
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent);
+      flex-shrink: 0;
+      font-family: 'Playfair Display', serif;
+    }
+
+    .author-info { display: flex; flex-direction: column; gap: 2px; }
+
+    .author-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .author-meta {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* Refresh button */
+    .refresh-wrap {
+      text-align: center;
+      margin-top: 36px;
+    }
+
+    .btn-refresh {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border: 1.5px solid var(--accent);
+      background: transparent;
+      color: var(--accent);
+      border-radius: 40px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-refresh:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-refresh svg {
+      width: 15px;
+      height: 15px;
+      transition: transform 0.4s ease;
+    }
+
+    .btn-refresh:hover svg { transform: rotate(180deg); }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="widget">
+
+  <div class="header">
+    <div class="header-label">Opiniones verificadas</div>
+    <h2>Lo que dicen <em>nuestros clientes</em></h2>
+    <div class="global-stars">
+      <div class="star-row">
+        <span class="star">★</span><span class="star">★</span>
+        <span class="star">★</span><span class="star">★</span>
+        <span class="star">★</span>
+      </div>
+      <span class="global-score">5.0 · Basado en opiniones reales</span>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="refresh-wrap">
+    <button class="btn-refresh" onclick="render()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+        <path d="M3.51 9a9 9 0 0114.36-3.36L23 10M1 14l5.13 4.36A9 9 0 0020.49 15"/>
+      </svg>
+      Ver otras reseñas
+    </button>
+  </div>
+
+</div>
+
+<script>
+  // =============================================
+  // TUS RESEÑAS APROBADAS — edita aquí libremente
+  // =============================================
+  const REVIEWS = [
+    {
+      name: "María G.",
+      meta: "Cliente desde 2023",
+      stars: 5,
+      text: "Excelente servicio, superaron todas mis expectativas. Sin duda volvería a contar con ellos para cualquier proyecto."
+    },
+    {
+      name: "Carlos M.",
+      meta: "Compra verificada",
+      stars: 5,
+      text: "Atención impecable y resultado final increíble. Lo recomiendo sin ninguna duda a cualquier persona."
+    },
+    {
+      name: "Laura P.",
+      meta: "Cliente recurrente",
+      stars: 5,
+      text: "Muy profesionales y puntuales. La comunicación fue clara en todo momento y el trabajo quedó perfecto."
+    },
+    {
+      name: "Javier R.",
+      meta: "Cliente desde 2022",
+      stars: 5,
+      text: "El mejor servicio que he recibido en mucho tiempo. Se nota que cuidan cada detalle con mucha dedicación."
+    },
+    {
+      name: "Ana S.",
+      meta: "Compra verificada",
+      stars: 5,
+      text: "Rápidos, eficientes y muy amables. Resolvieron mi consulta en minutos. Totalmente recomendables."
+    },
+    {
+      name: "Pedro L.",
+      meta: "Cliente frecuente",
+      stars: 5,
+      text: "Llevo años trabajando con ellos y siempre me sorprenden positivamente. Una referencia en su sector."
+    },
+    {
+      name: "Sofía T.",
+      meta: "Compra verificada",
+      stars: 5,
+      text: "Calidad excepcional y precios muy competitivos. La relación calidad-precio es difícil de superar."
+    },
+    {
+      name: "David N.",
+      meta: "Cliente desde 2024",
+      stars: 5,
+      text: "El proceso fue muy sencillo de principio a fin. Equipo muy profesional y resultados que hablan por sí solos."
+    },
+    {
+      name: "Elena V.",
+      meta: "Compra verificada",
+      stars: 5,
+      text: "No esperaba tan buen resultado en tan poco tiempo. Muy satisfecha con todo el proceso y el trato recibido."
+    },
+    {
+      name: "Roberto F.",
+      meta: "Cliente recurrente",
+      stars: 5,
+      text: "Siempre cumplen con lo prometido. Es un placer trabajar con un equipo tan comprometido y profesional."
+    },
+    {
+      name: "Isabel C.",
+      meta: "Compra verificada",
+      stars: 5,
+      text: "Me orientaron perfectamente desde el primer momento. Gran equipo, gran resultado. Repetiré sin duda."
+    },
+    {
+      name: "Miguel Á.",
+      meta: "Cliente desde 2023",
+      stars: 5,
+      text: "Servicio de diez. Rápidos, transparentes y con un resultado final que superó lo que esperaba. Muy recomendables."
+    }
+  ];
+
+  // Cuántas reseñas mostrar a la vez (cámbialo si quieres más o menos)
+  const VISIBLE = 3;
+
+  function stars(n) {
+    return Array(n).fill('<span class="star">★</span>').join('');
+  }
+
+  function initials(name) {
+    return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  }
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function render() {
+    const grid = document.getElementById('grid');
+    const picked = shuffle(REVIEWS).slice(0, VISIBLE);
+
+    grid.innerHTML = picked.map(r => `
+      <div class="card">
+        <div class="card-stars">${stars(r.stars)}</div>
+        <p class="card-quote">${r.text}</p>
+        <div class="card-footer">
+          <div class="avatar">${initials(r.name)}</div>
+          <div class="author-info">
+            <span class="author-name">${r.name}</span>
+            <span class="author-meta">${r.meta}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  render();
+</script>
+</body>
+</html>
