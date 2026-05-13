@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -35,7 +36,6 @@
       max-width: 960px;
     }
 
-    /* Header */
     .header {
       text-align: center;
       margin-bottom: 40px;
@@ -75,7 +75,6 @@
       color: var(--accent);
     }
 
-    /* Stars global */
     .global-stars {
       display: flex;
       align-items: center;
@@ -85,7 +84,6 @@
     }
 
     .star-row { display: flex; gap: 3px; }
-
     .star { color: var(--accent); font-size: 18px; }
 
     .global-score {
@@ -94,14 +92,12 @@
       font-weight: 400;
     }
 
-    /* Grid */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 20px;
     }
 
-    /* Card */
     .card {
       background: var(--card);
       border-radius: var(--radius);
@@ -194,7 +190,6 @@
       color: var(--muted);
     }
 
-    /* Refresh button */
     .refresh-wrap {
       text-align: center;
       margin-top: 36px;
@@ -217,20 +212,26 @@
       transition: background 0.2s, color 0.2s;
     }
 
-    .btn-refresh:hover {
-      background: var(--accent);
-      color: #fff;
-    }
+    .btn-refresh:hover { background: var(--accent); color: #fff; }
 
     .btn-refresh svg {
-      width: 15px;
-      height: 15px;
+      width: 15px; height: 15px;
       transition: transform 0.4s ease;
     }
 
     .btn-refresh:hover svg { transform: rotate(180deg); }
 
-    /* Responsive */
+    /* Estado vacío y error */
+    .state-msg {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+      font-size: 14px;
+      grid-column: 1 / -1;
+    }
+
+    .state-msg .icon { font-size: 32px; margin-bottom: 12px; }
+
     @media (max-width: 480px) {
       .grid { grid-template-columns: 1fr; }
     }
@@ -248,11 +249,16 @@
         <span class="star">★</span><span class="star">★</span>
         <span class="star">★</span>
       </div>
-      <span class="global-score">5.0 · Basado en opiniones reales</span>
+      <span class="global-score" id="score-label">Cargando reseñas...</span>
     </div>
   </div>
 
-  <div class="grid" id="grid"></div>
+  <div class="grid" id="grid">
+    <div class="state-msg">
+      <div class="icon">⏳</div>
+      Cargando reseñas...
+    </div>
+  </div>
 
   <div class="refresh-wrap">
     <button class="btn-refresh" onclick="render()">
@@ -267,92 +273,60 @@
 </div>
 
 <script>
-  // =============================================
-  // TUS RESEÑAS APROBADAS — edita aquí libremente
-  // =============================================
-  const REVIEWS = [
-    {
-      name: "María G.",
-      meta: "Cliente desde 2023",
-      stars: 5,
-      text: "Excelente servicio, superaron todas mis expectativas. Sin duda volvería a contar con ellos para cualquier proyecto."
-    },
-    {
-      name: "Carlos M.",
-      meta: "Compra verificada",
-      stars: 5,
-      text: "Atención impecable y resultado final increíble. Lo recomiendo sin ninguna duda a cualquier persona."
-    },
-    {
-      name: "Laura P.",
-      meta: "Cliente recurrente",
-      stars: 5,
-      text: "Muy profesionales y puntuales. La comunicación fue clara en todo momento y el trabajo quedó perfecto."
-    },
-    {
-      name: "Javier R.",
-      meta: "Cliente desde 2022",
-      stars: 5,
-      text: "El mejor servicio que he recibido en mucho tiempo. Se nota que cuidan cada detalle con mucha dedicación."
-    },
-    {
-      name: "Ana S.",
-      meta: "Compra verificada",
-      stars: 5,
-      text: "Rápidos, eficientes y muy amables. Resolvieron mi consulta en minutos. Totalmente recomendables."
-    },
-    {
-      name: "Pedro L.",
-      meta: "Cliente frecuente",
-      stars: 5,
-      text: "Llevo años trabajando con ellos y siempre me sorprenden positivamente. Una referencia en su sector."
-    },
-    {
-      name: "Sofía T.",
-      meta: "Compra verificada",
-      stars: 5,
-      text: "Calidad excepcional y precios muy competitivos. La relación calidad-precio es difícil de superar."
-    },
-    {
-      name: "David N.",
-      meta: "Cliente desde 2024",
-      stars: 5,
-      text: "El proceso fue muy sencillo de principio a fin. Equipo muy profesional y resultados que hablan por sí solos."
-    },
-    {
-      name: "Elena V.",
-      meta: "Compra verificada",
-      stars: 5,
-      text: "No esperaba tan buen resultado en tan poco tiempo. Muy satisfecha con todo el proceso y el trato recibido."
-    },
-    {
-      name: "Roberto F.",
-      meta: "Cliente recurrente",
-      stars: 5,
-      text: "Siempre cumplen con lo prometido. Es un placer trabajar con un equipo tan comprometido y profesional."
-    },
-    {
-      name: "Isabel C.",
-      meta: "Compra verificada",
-      stars: 5,
-      text: "Me orientaron perfectamente desde el primer momento. Gran equipo, gran resultado. Repetiré sin duda."
-    },
-    {
-      name: "Miguel Á.",
-      meta: "Cliente desde 2023",
-      stars: 5,
-      text: "Servicio de diez. Rápidos, transparentes y con un resultado final que superó lo que esperaba. Muy recomendables."
-    }
-  ];
+  // ── Configuración Supabase ──────────────────────────────────────────
+  const SUPABASE_URL = 'https://xrxgpxgowrpghvbtxgfn.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhyeGdweGdvd3JwZ2h2YnR4Z2ZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg2NjUxNTEsImV4cCI6MjA4NDI0MTE1MX0.MUeGfSb7S1kzBABPKnjM1qubXFBf0OwzF5V0PGP72Kk';
 
-  // Cuántas reseñas mostrar a la vez (cámbialo si quieres más o menos)
+  // Cuántas reseñas mostrar a la vez
   const VISIBLE = 3;
 
+  // ── Cache local ─────────────────────────────────────────────────────
+  let allReviews = [];
+
+  // ── Fetch desde Supabase ────────────────────────────────────────────
+  async function fetchReviews() {
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/reviews?approved=eq.true&select=*`,
+        {
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      allReviews = await res.json();
+
+      // Actualiza el contador global
+      const label = document.getElementById('score-label');
+      label.textContent = allReviews.length > 0
+        ? `5.0 · ${allReviews.length} opinión${allReviews.length !== 1 ? 'es' : ''} verificada${allReviews.length !== 1 ? 's' : ''}`
+        : 'Opiniones verificadas';
+
+      render();
+
+    } catch (err) {
+      console.error('Error cargando reseñas:', err);
+      document.getElementById('grid').innerHTML = `
+        <div class="state-msg">
+          <div class="icon">⚠️</div>
+          No se pudieron cargar las reseñas en este momento.
+        </div>`;
+      document.getElementById('score-label').textContent = 'Opiniones verificadas';
+    }
+  }
+
+  // ── Helpers ─────────────────────────────────────────────────────────
   function stars(n) {
-    return Array(n).fill('<span class="star">★</span>').join('');
+    return Array(Math.min(5, Math.max(1, n)))
+      .fill('<span class="star">★</span>').join('');
   }
 
   function initials(name) {
+    if (!name) return '?';
     return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   }
 
@@ -365,26 +339,44 @@
     return a;
   }
 
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────
   function render() {
     const grid = document.getElementById('grid');
-    const picked = shuffle(REVIEWS).slice(0, VISIBLE);
+
+    if (allReviews.length === 0) {
+      grid.innerHTML = `
+        <div class="state-msg">
+          <div class="icon">💬</div>
+          Aún no hay reseñas aprobadas.
+        </div>`;
+      return;
+    }
+
+    const picked = shuffle(allReviews).slice(0, VISIBLE);
 
     grid.innerHTML = picked.map(r => `
       <div class="card">
-        <div class="card-stars">${stars(r.stars)}</div>
+        <div class="card-stars">${stars(r.rating)}</div>
         <p class="card-quote">${r.text}</p>
         <div class="card-footer">
-          <div class="avatar">${initials(r.name)}</div>
+          <div class="avatar">${initials(r.author_name)}</div>
           <div class="author-info">
-            <span class="author-name">${r.name}</span>
-            <span class="author-meta">${r.meta}</span>
+            <span class="author-name">${r.author_name || 'Cliente'}</span>
+            <span class="author-meta">${r.date ? formatDate(r.date) : 'Opinión verificada'}</span>
           </div>
         </div>
       </div>
     `).join('');
   }
 
-  render();
+  // ── Init ─────────────────────────────────────────────────────────────
+  fetchReviews();
 </script>
 </body>
 </html>
