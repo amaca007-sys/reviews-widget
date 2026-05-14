@@ -10,13 +10,10 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #ffffff;
-      --card: #ffffff;
       --ink: #0a0a0a;
       --muted: #888888;
       --border: #e8e8e8;
       --accent: #1a47ff;
-      --radius: 2px;
     }
 
     body {
@@ -28,8 +25,12 @@
       justify-content: center;
     }
 
-    .widget { width: 100%; max-width: 1000px; }
+    .widget {
+      width: 100%;
+      max-width: 720px;
+    }
 
+    /* Header */
     .header {
       display: flex;
       align-items: flex-end;
@@ -80,30 +81,27 @@
       color: var(--muted);
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-    }
-
-    .card {
-      background: var(--card);
-      padding: 28px 26px;
+    /* Lista una columna */
+    .list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      opacity: 0;
-      animation: fadeIn 0.4s ease forwards;
-      transition: background 0.2s;
-      min-height: 220px;
     }
 
-    .card:hover { background: #fafafa; }
+    /* Card */
+    .card {
+      padding: 32px 0;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      column-gap: 32px;
+      row-gap: 16px;
+      opacity: 0;
+      animation: fadeIn 0.4s ease forwards;
+    }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -111,49 +109,30 @@
     .card:nth-child(2) { animation-delay: 0.10s; }
     .card:nth-child(3) { animation-delay: 0.16s; }
 
-    .card-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .card-stars { display: flex; gap: 2px; }
-    .card-stars .star { font-size: 12px; }
-
-    .card-date {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
     .card-text {
-      font-size: 14px;
-      line-height: 1.7;
+      font-size: 15px;
+      line-height: 1.75;
       color: var(--ink);
-      flex: 1;
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
+      grid-column: 1;
+      grid-row: 1;
     }
 
     .card-footer {
+      grid-column: 1;
+      grid-row: 2;
       display: flex;
       align-items: center;
       gap: 10px;
-      padding-top: 14px;
-      border-top: 1px solid var(--border);
     }
 
     .avatar {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       background: var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       color: #fff;
       letter-spacing: 0.05em;
@@ -168,8 +147,31 @@
       color: var(--ink);
     }
 
+    .card-meta {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      padding-top: 4px;
+      min-width: 100px;
+    }
+
+    .card-stars { display: flex; gap: 2px; }
+    .card-stars .star { font-size: 12px; }
+
+    .card-date {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    /* Botón */
     .refresh-wrap {
-      margin-top: 24px;
+      margin-top: 32px;
       display: flex;
       align-items: center;
       gap: 16px;
@@ -209,18 +211,25 @@
     }
 
     .state-msg {
-      grid-column: 1 / -1;
-      padding: 48px;
-      text-align: center;
+      padding: 48px 0;
       font-size: 12px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
     }
 
-    @media (max-width: 520px) {
-      .grid { grid-template-columns: 1fr; }
-      .header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    @media (max-width: 480px) {
+      .card {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+      .card-meta {
+        grid-column: 1;
+        grid-row: 1;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
     }
   </style>
 </head>
@@ -245,7 +254,7 @@
     </div>
   </div>
 
-  <div class="grid" id="grid">
+  <div class="list" id="list">
     <div class="state-msg">Cargando reseñas...</div>
   </div>
 
@@ -283,7 +292,7 @@
         n > VISIBLE ? `Mostrando 3 de ${n} reseñas` : '';
       render();
     } catch {
-      document.getElementById('grid').innerHTML = `<div class="state-msg">Error al cargar las reseñas.</div>`;
+      document.getElementById('list').innerHTML = `<div class="state-msg">Error al cargar las reseñas.</div>`;
       document.getElementById('score-label').textContent = 'Opiniones verificadas';
     }
   }
@@ -312,22 +321,22 @@
   }
 
   function render() {
-    const grid = document.getElementById('grid');
+    const list = document.getElementById('list');
     if (!allReviews.length) {
-      grid.innerHTML = `<div class="state-msg">Aún no hay reseñas aprobadas.</div>`;
+      list.innerHTML = `<div class="state-msg">Aún no hay reseñas aprobadas.</div>`;
       return;
     }
     const picked = shuffle(allReviews).slice(0, VISIBLE);
-    grid.innerHTML = picked.map(r => `
+    list.innerHTML = picked.map(r => `
       <div class="card">
-        <div class="card-top">
-          <div class="card-stars">${stars(r.rating)}</div>
-          ${r.date ? `<span class="card-date">${formatDate(r.date)}</span>` : ''}
-        </div>
         <p class="card-text">${r.text}</p>
         <div class="card-footer">
           <div class="avatar">${initials(r.author_name)}</div>
           <span class="author-name">${r.author_name || 'Cliente'}</span>
+        </div>
+        <div class="card-meta">
+          <div class="card-stars">${stars(r.rating)}</div>
+          ${r.date ? `<span class="card-date">${formatDate(r.date)}</span>` : ''}
         </div>
       </div>
     `).join('');
